@@ -1,8 +1,9 @@
 import '../styles/globals.css';
 import '@rainbow-me/rainbowkit/styles.css';
-import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { getDefaultWallets, RainbowKitProvider, connectorsForWallets, darkTheme } from '@rainbow-me/rainbowkit';
 import type { AppProps } from 'next/app';
 import { configureChains, createConfig, WagmiConfig } from 'wagmi';
+import { publicProvider } from 'wagmi/providers/public';
 import {
   arbitrum,
   goerli,
@@ -12,8 +13,20 @@ import {
   base,
   zora,
 } from 'wagmi/chains';
-import { publicProvider } from 'wagmi/providers/public';
+import {
+  injectedWallet,
+  metaMaskWallet,
+  trustWallet,
+  coinbaseWallet,
+  walletConnectWallet,
+  rainbowWallet,
+  ledgerWallet,
+} from '@rainbow-me/rainbowkit/wallets';
 
+// Your Infura project ID (or equivalent)
+const projectId = "fbdcc970329b43b9a85d7a6a4859f3af";
+
+// Configure your chains
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [
     mainnet,
@@ -27,12 +40,23 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
   [publicProvider()]
 );
 
-const { connectors } = getDefaultWallets({
-  appName: 'RainbowKit App',
-  projectId: 'YOUR_PROJECT_ID',
-  chains,
-});
+// Consolidate your connectors here
+const connectors = connectorsForWallets([
+  {
+    groupName: 'Suggested',
+    wallets: [
+      injectedWallet({ chains }),
+      metaMaskWallet({ projectId, chains }),
+      trustWallet({ projectId, chains }),
+      coinbaseWallet({ chains, appName: 'My RainbowKit App' }),
+      walletConnectWallet({ projectId, chains }),
+      rainbowWallet({ projectId, chains }),
+      ledgerWallet({ projectId, chains })
+    ],
+  },
+]);
 
+// Create your Wagmi config
 const wagmiConfig = createConfig({
   autoConnect: true,
   connectors,
@@ -40,14 +64,16 @@ const wagmiConfig = createConfig({
   webSocketPublicClient,
 });
 
+// Your MyApp function
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider chains={chains}>
+      <RainbowKitProvider theme={darkTheme()} chains={chains}>
         <Component {...pageProps} />
       </RainbowKitProvider>
     </WagmiConfig>
   );
 }
+
 
 export default MyApp;
