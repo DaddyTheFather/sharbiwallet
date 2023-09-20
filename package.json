@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^1.0.11",
+    "express": "^4.18.2",
     "lodash.merge": "^4.6.2",
     "next": "^13.4.19",
     "react": "^18.2.0",
